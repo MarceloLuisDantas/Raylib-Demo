@@ -1,0 +1,18 @@
+{
+    "project": "TTT",
+    "type": "bin",
+    "sources": [
+        "src/game.c"
+    ],
+    "comp_flags": [
+        "-Wall",
+        "-lraylib",
+        "-lm"
+    ],
+    "valgrind_flags": [
+        ""
+    ],
+    "gdb_flags": [
+        ""
+    ]
+}
