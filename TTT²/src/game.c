@@ -8,17 +8,7 @@
 // 2 = O
 typedef struct Game {
     int estado[9];
-
-    // Vencido
-    // 1 = primeira linha horizontal
-    // 2 = segunda linha horizontal
-    // 3 = terceira linha horizontal
-    // 4 = primeira linha vertical
-    // 5 = segunda linha vertical
-    // 6 = terceira linha vertical
-    // 7 = primeira diagonal
-    // 8 = segunda diagonal
-    int vencido;
+    bool vencido;
 } Game;
 
 void next_turn(int *vez) {
@@ -28,44 +18,28 @@ void next_turn(int *vez) {
 
 int check_ganhou(Game *game) {
     // Linhas horizontais
-    if (game->estado[0] == game->estado[1] && game->estado[0] == game->estado[2] && game->estado[0] != 0) return 1;
-    if (game->estado[3] == game->estado[4] && game->estado[3] == game->estado[5] && game->estado[3] != 0) return 2;
-    if (game->estado[6] == game->estado[7] && game->estado[6] == game->estado[8] && game->estado[6] != 0) return 3;
-    
+    if (game->estado[0] == game->estado[1] && game->estado[0] == game->estado[2] && game->estado[0] != 0) return true;
+    if (game->estado[3] == game->estado[4] && game->estado[3] == game->estado[5] && game->estado[3] != 0) return true;
+    if (game->estado[6] == game->estado[7] && game->estado[6] == game->estado[8] && game->estado[6] != 0) return true;
+
     // Linhas verticais
-    if (game->estado[0] == game->estado[3] && game->estado[0] == game->estado[6] && game->estado[0] != 0) return 4;
-    if (game->estado[1] == game->estado[4] && game->estado[1] == game->estado[7] && game->estado[1] != 0) return 5;
-    if (game->estado[2] == game->estado[5] && game->estado[2] == game->estado[8] && game->estado[2] != 0) return 6;
-
+    if (game->estado[0] == game->estado[3] && game->estado[0] == game->estado[6] && game->estado[0] != 0) return true;
+    if (game->estado[1] == game->estado[4] && game->estado[1] == game->estado[7] && game->estado[1] != 0) return true;
+    if (game->estado[2] == game->estado[5] && game->estado[2] == game->estado[8] && game->estado[2] != 0) return true;
+    
     // Linhas diagonais
-    if (game->estado[0] == game->estado[4] && game->estado[0] == game->estado[8] && game->estado[0] != 0) return 7;
-    if (game->estado[2] == game->estado[4] && game->estado[2] == game->estado[6] && game->estado[2] != 0) return 8;
+    if (game->estado[0] == game->estado[4] && game->estado[0] == game->estado[8] && game->estado[0] != 0) return true;
+    if (game->estado[2] == game->estado[4] && game->estado[2] == game->estado[6] && game->estado[2] != 0) return true;
 
-    return 0;
+    return false;
 }
 
-void draw_horizontal_line(Rectangle r1, Rectangle r2) {
-    Vector2 start = { r1.x - r1.x/2,   r1.y + 57 };
-    Vector2 end   = { r2.x + r2.x/2.4, r2.y + 57 };
-    DrawLineEx(start, end, 20.0f, BLUE);    
-}
-
-void draw_vertical_line(Rectangle r1, Rectangle r2) {
-    Vector2 start = { r1.x + 57, r1.y - 10 };
-    Vector2 end   = { r2.x + 57, r2.y + r2.y/2.4 };
-    DrawLineEx(start, end, 20.0f, BLUE);    
-}
-
-void draw_diagonal_line_1(Rectangle r1, Rectangle r2) {
-    Vector2 start = { r1.x - r1.x/4,   r1.y - 0 };
-    Vector2 end   = { r2.x + r2.width, r2.y + 115 };
-    DrawLineEx(start, end, 20.0f, BLUE);    
-}
-
-void draw_diagonal_line_2(Rectangle r1, Rectangle r2) {
-    Vector2 start = { r1.x + r1.width,   r1.y - 0 };
-    Vector2 end   = { r2.x - r2.x/4, r2.y + 115 };
-    DrawLineEx(start, end, 20.0f, BLUE);    
+void print_vencedor(int vez, int start, int padding) {
+    if (vez == 2) DrawText("X", start + padding + 150, 120, 50, RED);
+    else          DrawText("O", start + padding + 150, 120, 50, GREEN);
+    DrawText("VENCEU", start + padding + 58, 180, 50, GRAY);
+    if (vez == 2) DrawText("O", start + padding + 150, 240, 50, GREEN);
+    else          DrawText("X", start + padding + 150, 240, 50, RED);
 }
 
 int main(void) {
@@ -87,6 +61,10 @@ int main(void) {
 
     Texture2D x = LoadTexture("src/x.png");
     Texture2D o = LoadTexture("src/o.png");
+
+    Rectangle sourceRec = { 0.0f, 0.0f, (float)o.width, (float)o.height };
+    Rectangle destRec   = { campo_x + 58, campo_y + 58, campo.width, campo.height };
+    Vector2   origin    = { (float)o.width/2, (float)o.height/2 };
 
     int offset = 25;
     Rectangle cells[] = {
@@ -164,50 +142,18 @@ int main(void) {
             }
 
             if (game.vencido != 0) {              
-                switch (game.vencido) {
-                    case 1:
-                        draw_horizontal_line(cells[0], cells[2]);
-                        break;
-                    case 2:
-                        draw_horizontal_line(cells[3], cells[5]);
-                        break;
-                    case 3:
-                        draw_horizontal_line(cells[6], cells[8]);
-                        break;
-
-                    case 4:
-                        draw_vertical_line(cells[0], cells[6]);
-                        break;
-                    case 5:
-                        draw_vertical_line(cells[1], cells[7]);
-                        break;
-                    case 6:
-                        draw_vertical_line(cells[2], cells[8]);
-                        break;
-                        
-                    case 7:
-                        draw_diagonal_line_1(cells[0], cells[8]);
-                        break;
-                    case 8:
-                        draw_diagonal_line_2(cells[2], cells[6]);
-                        break;
-                }
-
                 if (vez == 2){
-                    DrawText("X",      campo_x + campo.width + 150, 120, 50, RED);
-                    DrawText("VENCEU", campo_x + campo.width + 58, 180, 50, GRAY);
-                    DrawText("O",      campo_x + campo.width + 150, 240, 50, GREEN);
+                    DrawTexturePro(x, sourceRec, destRec, origin, 0.0f, WHITE);
                 } else {
-                    DrawText("O",      campo_x + campo.width + 150, 120, 50, GREEN);
-                    DrawText("VENCEU", campo_x + campo.width + 58, 180, 50, GRAY);
-                    DrawText("X",      campo_x + campo.width + 150, 240, 50, RED);
-                }       
-
+                    DrawTexturePro(o, sourceRec, destRec, origin, 0.0f, WHITE);
+                }    
+                print_vencedor(vez, campo_x, campo.width);
             } else {
-                if (vez == 1)
+                if (vez == 1) {
                     DrawText("Vez de: X", campo_x + campo.width + 30, 20, 50, GRAY);
-                else 
+                } else {
                     DrawText("Vez de: O", campo_x + campo.width + 30, 20, 50, GRAY);
+                }
             }
 
         EndDrawing();
